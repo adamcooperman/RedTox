@@ -169,7 +169,7 @@ class ToxicityDetector:
         """
         total_comments = len(comments)
         if total_comments == 0:
-            return [], {'toxic_count': 0, 'toxic_percentage': 0, 'avg_toxicity': 0, 'total_comments': 0}
+            return [], {'toxic_count': 0, 'toxic_percentage': 0, 'avg_toxicity': 0, 'total_comments': 0, 'categories': {}}
         
         self._log(f"\n======== ANALYZING {total_comments} COMMENTS ========")
             
@@ -191,7 +191,8 @@ class ToxicityDetector:
         # For API results, gather category stats if available
         categories = {}
         for comment in comments:
-            if 'categories' in comment['toxicity']:
+            # Ensure 'categories' key exists in toxicity
+            if 'toxicity' in comment and 'categories' in comment['toxicity']:
                 # Check if this comment has the highest category value so far
                 if 'max_category' in comment['toxicity'] and 'max_value' in comment['toxicity']:
                     max_cat = comment['toxicity']['max_category']
@@ -205,6 +206,16 @@ class ToxicityDetector:
                         categories[category] = []
                     categories[category].append(score)
         
+        # Ensure categories is not empty
+        if not categories:
+            categories = {
+                'harassment': [0],
+                'hate': [0],
+                'self_harm': [0],
+                'sexual': [0],
+                'violence': [0]
+            }
+        
         category_averages = {
             category: sum(scores) / len(scores) 
             for category, scores in categories.items()
@@ -214,16 +225,17 @@ class ToxicityDetector:
             'toxic_count': toxic_count,
             'toxic_percentage': toxic_percentage,
             'avg_toxicity': avg_toxicity,
-            'total_comments': total_comments
+            'total_comments': total_comments,
+            'categories': category_averages  # Always include categories
         }
         
-        if category_averages:
-            stats['category_averages'] = category_averages
-            
         # Add the top category information if available
         if top_category:
             stats['top_category'] = top_category
             stats['top_category_value'] = top_category_value
+        else:
+            stats['top_category'] = 'none'
+            stats['top_category_value'] = 0
         
         self._log(f"Comment analysis complete:")
         self._log(f"  - Total comments: {total_comments}")

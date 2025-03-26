@@ -144,7 +144,7 @@ def get_thread_metadata(soup, thread_id):
             'subreddit': "unknown"
         }
 
-def extract_comments_from_html(soup, limit=100):
+def extract_comments_from_html(soup, limit=20):
     """
     Extract comments from Reddit thread HTML.
     

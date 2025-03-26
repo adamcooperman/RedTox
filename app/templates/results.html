@@ -59,15 +59,15 @@
                     </div>
                 </div>
                 
-                {% if stats.most_severe and stats.most_severe_score > 0 %}
+                {% if stats.top_category and stats.top_category != 'none' and stats.top_category_value > 0 %}
                 <div class="mb-4">
                     <div class="card" style="border-left: 4px solid var(--danger);">
                         <div class="card-body">
-                            <h3 class="h5 mb-3">Most Severe Category: <span class="badge bg-danger">{{ stats.most_severe|replace('_', ' ')|title }}</span></h3>
+                            <h3 class="h5 mb-3">Most Severe Category: <span class="badge bg-danger">{{ stats.top_category|replace('_', ' ')|title }}</span></h3>
                             <div class="progress mb-2">
-                                <div class="progress-bar bg-danger" role="progressbar" style="width: {{ (stats.most_severe_score * 100)|int }}%;" 
-                                    aria-valuenow="{{ (stats.most_severe_score * 100)|int }}" aria-valuemin="0" aria-valuemax="100">
-                                    {{ "%.0f"|format(stats.most_severe_score * 100) }}%
+                                <div class="progress-bar bg-danger" role="progressbar" style="width: {{ (stats.top_category_value * 100)|int }}%;" 
+                                    aria-valuenow="{{ (stats.top_category_value * 100)|int }}" aria-valuemin="0" aria-valuemax="100">
+                                    {{ "%.0f"|format(stats.top_category_value * 100) }}%
                                 </div>
                             </div>
                             <small class="text-muted">This category has the highest toxicity score in this thread.</small>
@@ -88,24 +88,30 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for category, score in stats.categories|dictsort(by='value', reverse=True) %}
-                            <tr>
-                                <td class="text-light">{{ category|replace('_', ' ')|title }}</td>
-                                <td>{{ "%.2f"|format(score) }}</td>
-                                <td>
-                                    <div class="progress">
-                                        <div class="progress-bar {% if score > 0.7 %}bg-danger{% elif score > 0.4 %}bg-warning{% elif score > 0 %}bg-success{% else %}bg-secondary{% endif %}" 
-                                            role="progressbar" 
-                                            style="width: {{ (score * 100)|int }}%;" 
-                                            aria-valuenow="{{ (score * 100)|int }}" 
-                                            aria-valuemin="0" 
-                                            aria-valuemax="100">
-                                            {% if score > 0.1 %}{{ "%.0f"|format(score * 100) }}%{% endif %}
+                            {% if stats.categories %}
+                                {% for category, score in stats.categories|dictsort(by='value', reverse=True) %}
+                                <tr>
+                                    <td class="text-light">{{ category|replace('_', ' ')|title }}</td>
+                                    <td>{{ "%.2f"|format(score) }}</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar {% if score > 0.7 %}bg-danger{% elif score > 0.4 %}bg-warning{% elif score > 0 %}bg-success{% else %}bg-secondary{% endif %}" 
+                                                role="progressbar" 
+                                                style="width: {{ (score * 100)|int }}%;" 
+                                                aria-valuenow="{{ (score * 100)|int }}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
+                                                {% if score > 0.1 %}{{ "%.0f"|format(score * 100) }}%{% endif %}
+                                            </div>
                                         </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td class="text-light" colspan="3">No category data available</td>
+                                </tr>
+                            {% endif %}
                         </tbody>
                     </table>
                 </div>
