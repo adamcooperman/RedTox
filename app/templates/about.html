@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}About RedTox{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-decoration-none"><i class="bi bi-house me-1"></i>Home</a></li>
+                <li class="breadcrumb-item active">About</li>
+            </ol>
+        </nav>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2" style="font-size: 1.5rem; color: var(--primary);"></i>
+                <h1 class="h3 d-inline mb-0">About RedTox</h1>
+            </div>
+            <div class="card-body">
+                <section class="mb-5">
+                    <h2 class="h4 mb-3"><i class="bi bi-question-circle me-2"></i>What is RedTox?</h2>
+                    <p class="text-light">RedTox is a Reddit thread toxicity scanner that helps users analyze and filter potentially harmful content from Reddit discussions. It uses advanced AI text moderation to identify and warn about toxic language, allowing you to browse Reddit threads with awareness of potentially offensive content.</p>
+                </section>
+                
+                <section class="mb-5">
+                    <h2 class="h4 mb-3"><i class="bi bi-gear me-2"></i>How It Works</h2>
+                    <p class="text-light">RedTox scans Reddit threads and analyzes each comment for toxicity using the Friendly_Text_Moderation API.</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-4 mb-3">
+                            <div class="stat-card">
+                                <i class="bi bi-search" style="font-size: 2rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                                <h3 class="h5">1. Thread Analysis</h3>
+                                <p class="text-light">Paste a Reddit thread URL and RedTox will retrieve all comments from that discussion.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="stat-card">
+                                <i class="bi bi-shield-check" style="font-size: 2rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                                <h3 class="h5">2. Content Scanning</h3>
+                                <p class="text-light">Each comment is analyzed by our AI to detect potential toxicity across multiple categories.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="stat-card">
+                                <i class="bi bi-eye" style="font-size: 2rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                                <h3 class="h5">3. Safe Browsing</h3>
+                                <p class="text-light">View the thread with toxic content warnings and adjust your toxicity threshold as needed.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <section class="mb-5">
+                    <h2 class="h4 mb-3"><i class="bi bi-exclamation-triangle me-2"></i>Toxicity Detection</h2>
+                    <p class="text-light">RedTox identifies various types of harmful content, including:</p>
+                    
+                    <div class="card mb-4" style="border-left: 4px solid var(--warning);">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="text-light">
+                                        <li><strong>Hate Speech</strong> - Content targeting groups based on protected attributes</li>
+                                        <li><strong>Harassment</strong> - Bullying or intimidating language</li>
+                                        <li><strong>Self-Harm</strong> - Content promoting self-harm or suicide</li>
+                                        <li><strong>Sexual Content</strong> - Explicit sexual content</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="text-light">
+                                        <li><strong>Violence</strong> - Content promoting or glorifying violence</li>
+                                        <li><strong>Profanity</strong> - Offensive or inappropriate language</li>
+                                        <li><strong>Threatening Language</strong> - Direct threats to individuals or groups</li>
+                                        <li><strong>Misinformation</strong> - Deliberately misleading content</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <div class="d-flex">
+                            <i class="bi bi-exclamation-triangle-fill me-2" style="font-size: 1.2rem;"></i>
+                            <div>
+                                <strong>Disclaimer:</strong> RedTox is a tool designed to help identify potentially harmful content, but it is not perfect. The AI may miss some toxic content or falsely flag non-toxic content. Always use your judgment when browsing Reddit. This tool is not affiliated with Reddit, Inc.
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

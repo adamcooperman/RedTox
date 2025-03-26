@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}RedTox - Analyze Reddit Threads{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="text-center mb-5">
+            <h1 class="display-4 mb-3">Reddit Toxicity Scanner</h1>
+            <p class="lead text-light mb-0">Analyze Reddit threads for toxic content with AI-powered detection</p>
+        </div>
+        
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-search me-2" style="font-size: 1.5rem; color: var(--primary);"></i>
+                        <h2 class="h3 d-inline mb-0">Analyze a Thread</h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-light mb-4">Enter a Reddit thread URL to analyze the comments for toxic content:</p>
+                        
+                        <form action="{{ url_for('main.analyze') }}" method="get">
+                            <div class="mb-4">
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-reddit"></i>
+                                    </span>
+                                    <input type="url" class="form-control" id="thread_url" name="thread_url" 
+                                           placeholder="https://www.reddit.com/r/..."
+                                           required>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-search me-2"></i>Analyze
+                                    </button>
+                                </div>
+                                <div class="form-text text-light mt-2">
+                                    Example: https://www.reddit.com/r/AskReddit/comments/abcdef/example_thread/
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="h3 text-center mb-4">Why Use RedTox?</h2>
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <div class="stat-card h-100">
+                            <i class="bi bi-shield-check" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                            <h3 class="h4">Safe Browsing</h3>
+                            <p class="text-light">Browse Reddit with awareness of potentially harmful content before viewing it</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="stat-card h-100">
+                            <i class="bi bi-graph-up" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                            <h3 class="h4">Detailed Analytics</h3>
+                            <p class="text-light">Get insights on toxicity categories and severity in thread comments</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="stat-card h-100">
+                            <i class="bi bi-sliders" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                            <h3 class="h4">Customizable</h3>
+                            <p class="text-light">Adjust toxicity thresholds to match your comfort level for content filtering</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-lg-10 mx-auto">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-info-circle me-2" style="font-size: 1.5rem; color: var(--primary);"></i>
+                        <h2 class="h3 d-inline mb-0">About RedTox</h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-light mb-4">RedTox uses AI-powered toxicity detection to analyze Reddit comments and identify potentially harmful content, including:</p>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <ul class="text-light">
+                                    <li><strong>Hate Speech</strong></li>
+                                    <li><strong>Harassment</strong></li>
+                                    <li><strong>Self-Harm Content</strong></li>
+                                    <li><strong>Sexual Content</strong></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="text-light">
+                                    <li><strong>Violence</strong></li>
+                                    <li><strong>Profanity</strong></li>
+                                    <li><strong>Threatening Language</strong></li>
+                                    <li><strong>Misinformation</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info d-flex align-items-center">
+                            <i class="bi bi-lightbulb-fill me-3" style="font-size: 1.5rem;"></i>
+                            <div>
+                                Ready to explore Reddit with awareness of potentially harmful content? Try analyzing a thread now.
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('main.about') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-info-circle me-2"></i>Learn More
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

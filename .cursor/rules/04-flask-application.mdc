@@ -1,0 +1,156 @@
+---
+description: Flask Application: Guidelines for implementing the RedTox web interface
+globs: **/app.py, **/routes.py, **/templates/**
+---
+
+# Flask Application Structure
+
+## Application Setup
+
+The Flask application should be structured using the application factory pattern:
+
+```python
+# app/__init__.py
+from flask import Flask
+
+def create_app(config_object=None):
+    """Create and configure the Flask application."""
+    app = Flask(__name__)
+    
+    # Load config
+    if config_object:
+        app.config.from_object(config_object)
+    else:
+        app.config.from_pyfile('../config.py')
+    
+    # Register blueprints
+    from app.routes import main
+    app.register_blueprint(main)
+    
+    return app
+```
+
+## Routes
+
+Organize routes using Flask blueprints:
+
+```python
+# app/routes.py
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for
+from app.reddit_client import get_thread_data, extract_comments
+from app.toxicity_detector import ToxicityDetector
+
+main = Blueprint('main', __name__)
+toxicity_detector = ToxicityDetector()
+
+@main.route('/', methods=['GET'])
+def index():
+    """Render the home page with the URL input form."""
+    return render_template('index.html')
+
+@main.route('/analyze', methods=['POST'])
+def analyze():
+    """Analyze a Reddit thread for toxicity."""
+    thread_url = request.form.get('thread_url')
+    # Validate URL and process
+    # ...
+    return render_template('results.html', results=results)
+
+@main.route('/view/<thread_id>', methods=['GET'])
+def view_thread(thread_id):
+    """Display the redacted version of a Reddit thread."""
+    # Fetch and process thread
+    # ...
+    return render_template('thread.html', thread=thread_data)
+```
+
+## Templates
+
+### Base Template (base.html)
+
+Create a base template with common elements:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}RedTox{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">RedTox</a>
+        </div>
+    </nav>
+    
+    <div class="container mt-4">
+        {% block content %}{% endblock %}
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
+```
+
+### Key Views
+
+1. **Index (index.html)**: URL input form
+2. **Results (results.html)**: Toxicity analysis results
+3. **Thread View (thread.html)**: Redacted Reddit thread view
+
+## Static Files
+
+Organize static files in appropriate directories:
+
+```
+app/static/
+├── css/
+│   ├── bootstrap.min.css
+│   └── styles.css
+├── js/
+│   ├── bootstrap.bundle.min.js
+│   └── scripts.js
+└── img/
+    └── logo.png
+```
+
+## Toxicity UI Components
+
+For redacted comments, implement a click-to-reveal pattern:
+
+```html
+<div class="comment {% if comment.toxicity.is_toxic %}toxic-comment{% endif %}">
+    {% if comment.toxicity.is_toxic %}
+        <div class="toxic-warning">
+            <p>⚠️ This comment has been flagged as potentially toxic ({{ "%.1f"|format(comment.toxicity.score * 100) }}%).</p>
+            <button class="btn btn-sm btn-warning reveal-btn" onclick="revealComment(this)">Reveal Comment</button>
+        </div>
+        <div class="comment-content" style="display: none;">
+            {{ comment.body }}
+        </div>
+    {% else %}
+        <div class="comment-content">
+            {{ comment.body }}
+        </div>
+    {% endif %}
+</div>
+```
+
+Add JavaScript to handle revealing comments:
+
+```javascript
+function revealComment(button) {
+    const commentDiv = button.closest('.comment');
+    const warningDiv = commentDiv.querySelector('.toxic-warning');
+    const contentDiv = commentDiv.querySelector('.comment-content');
+    
+    warningDiv.style.display = 'none';
+    contentDiv.style.display = 'block';
+}
+``` 

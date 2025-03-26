@@ -1,0 +1,82 @@
+---
+description: Reddit API Integration: Guidelines for working with the Reddit API
+globs: **/reddit_client.py
+---
+
+# Reddit API Integration
+
+## Setup and Authentication
+
+To access the Reddit API, we use the Python Reddit API Wrapper (PRAW). PRAW handles authentication and rate limiting when interacting with Reddit.
+
+### Authentication Requirements
+
+1. Reddit API credentials:
+   - `client_id`: Generated when creating a Reddit app
+   - `client_secret`: Secret key provided by Reddit
+   - `user_agent`: Identifier string for your app (e.g., "RedTox:v1.0 (by /u/username)")
+
+### Configuration
+
+Store API credentials securely in environment variables or a configuration file that is not committed to version control. Example:
+
+```python
+import os
+import praw
+
+def create_reddit_instance():
+    """Create and return a Reddit instance using PRAW."""
+    return praw.Reddit(
+        client_id=os.environ.get("REDDIT_CLIENT_ID"),
+        client_secret=os.environ.get("REDDIT_CLIENT_SECRET"),
+        user_agent=os.environ.get("REDDIT_USER_AGENT")
+    )
+```
+
+## Fetching Reddit Content
+
+### Thread and Comment Retrieval
+
+Use PRAW's built-in methods to retrieve threads and comments:
+
+```python
+def get_thread_data(thread_url):
+    """Retrieve data for a Reddit thread including comments."""
+    reddit = create_reddit_instance()
+    submission = reddit.submission(url=thread_url)
+    submission.comments.replace_more(limit=0)  # Expand comment forest
+    return submission
+```
+
+### Handling Rate Limits
+
+PRAW automatically handles rate limiting, but be aware of these limits:
+- 60 requests per minute
+- Consider implementing caching for frequently accessed content
+
+## Parsing Reddit Content
+
+When extracting comment data, capture relevant fields:
+
+```python
+def extract_comments(submission, limit=100):
+    """Extract the top comments from a submission."""
+    comments = []
+    for comment in submission.comments.list()[:limit]:
+        comments.append({
+            'id': comment.id,
+            'author': str(comment.author) if comment.author else '[deleted]',
+            'body': comment.body,
+            'score': comment.score,
+            'created_utc': comment.created_utc
+        })
+    return comments
+```
+
+## Best Practices
+
+1. Always handle exceptions when making API calls
+2. Implement caching to reduce API requests
+3. Respect Reddit's API terms of service
+4. Consider using Reddit's read-only mode when possible
+5. Handle "[deleted]" and "[removed]" content appropriately 

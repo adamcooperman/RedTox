@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}{{ thread.metadata.title }}{% endblock %}
+
+{% block head %}
+<style>
+    .comment {
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border-radius: 0.25rem;
+        background-color: #f8f9fa;
+    }
+    .toxic-comment {
+        border-left: 4px solid #dc3545;
+    }
+    .comment-author {
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    .comment-score {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    .toxic-warning {
+        padding: 0.5rem;
+        background-color: #fff3cd;
+        border-radius: 0.25rem;
+    }
+    .thread-info {
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+    }
+    .stats-badge {
+        font-size: 0.9rem;
+        margin-right: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-decoration-none"><i class="bi bi-house me-1"></i>Home</a></li>
+                <li class="breadcrumb-item active">Thread View</li>
+            </ol>
+        </nav>
+        
+        <div class="card mb-4">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-reddit me-2" style="font-size: 1.5rem; color: var(--secondary);"></i>
+                    <h1 class="h3 mb-0">Reddit Thread</h1>
+                </div>
+                <div>
+                    <a href="{{ url_for('main.analyze', thread_url='https://reddit.com' + thread.metadata.permalink) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-arrow-repeat me-1"></i>Re-analyze
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <h2 class="h4 mb-3">{{ thread.metadata.title }}</h2>
+                
+                <div class="d-flex flex-wrap align-items-center mb-4">
+                    <span class="badge bg-secondary me-2 mb-2"><i class="bi bi-person me-1"></i>u/{{ thread.metadata.author }}</span>
+                    <span class="badge bg-info me-2 mb-2"><i class="bi bi-reddit me-1"></i>r/{{ thread.metadata.subreddit }}</span>
+                    <span class="badge bg-primary me-2 mb-2"><i class="bi bi-chat-text me-1"></i>{{ thread.metadata.num_comments }} comments</span>
+                    <span class="badge bg-success me-2 mb-2"><i class="bi bi-arrow-up me-1"></i>{{ thread.metadata.score }} points</span>
+                </div>
+                
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    <a href="https://reddit.com{{ thread.metadata.permalink }}" class="btn btn-outline-secondary" target="_blank">
+                        <i class="bi bi-box-arrow-up-right me-2"></i>View Original Thread
+                    </a>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <div class="stat-value {% if thread.stats.toxic_percentage > 50 %}danger{% elif thread.stats.toxic_percentage > 25 %}warning{% else %}success{% endif %}">
+                                {{ "%.1f"|format(thread.stats.toxic_percentage) }}%
+                            </div>
+                            <p>Toxicity Rate</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <div class="stat-value {% if thread.stats.toxic_count > 10 %}danger{% elif thread.stats.toxic_count > 5 %}warning{% else %}success{% endif %}">
+                                {{ thread.stats.toxic_count }}
+                            </div>
+                            <p>Toxic Comments</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <div class="stat-value">
+                                {{ "%.2f"|format(thread.threshold) }}
+                            </div>
+                            <p>Toxicity Threshold</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="h5 mb-0"><i class="bi bi-chat-square-quote me-2"></i>Comments</h3>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-sliders me-1"></i>Adjust Threshold
+                        </button>
+                        <div class="dropdown-menu p-3" style="width: 300px;">
+                            <p class="mb-2">Adjust toxicity threshold:</p>
+                            <div class="d-flex align-items-center mb-2">
+                                <input type="range" class="form-range" id="thresholdSlider" min="0" max="1" step="0.05" value="{{ thread.threshold }}">
+                                <span class="badge bg-primary ms-2 py-2 px-3" id="thresholdValue">{{ "%.2f"|format(thread.threshold) }}</span>
+                            </div>
+                            <div class="d-grid">
+                                <button id="applyThreshold" class="btn btn-primary btn-sm">Apply</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Comments -->
+                <div id="comments-container">
+                    {% for comment in thread.comments %}
+                        <div class="comment {% if comment.toxicity.is_toxic %}toxic-comment{% endif %}">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="comment-author">
+                                    <i class="bi bi-person-circle me-1"></i>{{ comment.author }}
+                                    <span class="comment-score"><i class="bi bi-arrow-up me-1"></i>{{ comment.score }}</span>
+                                </div>
+                                {% if comment.toxicity.is_toxic %}
+                                <span class="badge bg-danger px-2 py-1">Toxic</span>
+                                {% endif %}
+                            </div>
+                            
+                            {% if comment.toxicity.is_toxic %}
+                            <div class="toxic-warning">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    <div>
+                                        <strong>Warning: This comment may contain toxic content.</strong>
+                                        <div class="mt-1">
+                                            {% if comment.toxicity.max_category %}
+                                            <span class="badge bg-danger me-1">{{ comment.toxicity.max_category|replace('_', ' ')|title }}</span>
+                                            {% endif %}
+                                            <span class="badge bg-secondary">Toxicity Score: {{ "%.2f"|format(comment.toxicity.score) }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-end">
+                                    <button class="btn btn-sm btn-outline-danger toggle-content">Show Content</button>
+                                </div>
+                            </div>
+                            <div class="toxic-content" style="display: none;">
+                                {{ comment.body }}
+                            </div>
+                            {% else %}
+                            <div class="comment-body">
+                                {{ comment.body }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Threshold slider functionality
+        const slider = document.getElementById('thresholdSlider');
+        const thresholdValue = document.getElementById('thresholdValue');
+        const applyBtn = document.getElementById('applyThreshold');
+        
+        slider.addEventListener('input', function() {
+            const value = parseFloat(this.value).toFixed(2);
+            thresholdValue.textContent = value;
+        });
+        
+        applyBtn.addEventListener('click', function() {
+            const value = slider.value;
+            window.location.href = window.location.pathname + '?threshold=' + value;
+        });
+        
+        // Toggle toxic content
+        document.querySelectorAll('.toggle-content').forEach(button => {
+            button.addEventListener('click', function() {
+                const contentDiv = this.closest('.toxic-warning').nextElementSibling;
+                if (contentDiv.style.display === 'none') {
+                    contentDiv.style.display = 'block';
+                    this.textContent = 'Hide Content';
+                } else {
+                    contentDiv.style.display = 'none';
+                    this.textContent = 'Show Content';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %} 

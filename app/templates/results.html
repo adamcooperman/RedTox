@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis Results - {{ thread_url }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-decoration-none"><i class="bi bi-house me-1"></i>Home</a></li>
+                <li class="breadcrumb-item active">Analysis Results</li>
+            </ol>
+        </nav>
+        
+        <div class="card mb-4">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <div>
+                    <i class="bi bi-file-earmark-bar-graph me-2" style="font-size: 1.5rem; color: var(--primary);"></i>
+                    <h1 class="h3 d-inline mb-0">Thread Analysis</h1>
+                </div>
+                <a href="{{ url_for('main.thread_view', thread_url=thread_url) }}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-eye me-1"></i>View Comments
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info d-flex align-items-center mb-4">
+                    <i class="bi bi-info-circle-fill me-2" style="font-size: 1.2rem;"></i>
+                    <div>
+                        <strong>Analyzed Thread:</strong> <a href="{{ thread_url }}" target="_blank" class="text-decoration-none">{{ thread_url }}</a>
+                    </div>
+                </div>
+                
+                <h2 class="h4 mb-4"><i class="bi bi-graph-up me-2"></i>Toxicity Analysis</h2>
+                
+                <div class="row mb-5">
+                    <div class="col-md-4 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-value {% if stats.toxic_percentage > 50 %}danger{% elif stats.toxic_percentage > 25 %}warning{% else %}success{% endif %}">
+                                {{ "%.1f"|format(stats.toxic_percentage) }}%
+                            </div>
+                            <p>Toxicity Rate</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-value {% if stats.toxic_count > 10 %}danger{% elif stats.toxic_count > 5 %}warning{% else %}success{% endif %}">
+                                {{ stats.toxic_count }}
+                            </div>
+                            <p>Toxic Comments Found</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-value {% if stats.avg_toxicity > 0.7 %}danger{% elif stats.avg_toxicity > 0.4 %}warning{% else %}success{% endif %}">
+                                {{ "%.2f"|format(stats.avg_toxicity) }}
+                            </div>
+                            <p>Average Toxicity Score</p>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if stats.most_severe and stats.most_severe_score > 0 %}
+                <div class="mb-4">
+                    <div class="card" style="border-left: 4px solid var(--danger);">
+                        <div class="card-body">
+                            <h3 class="h5 mb-3">Most Severe Category: <span class="badge bg-danger">{{ stats.most_severe|replace('_', ' ')|title }}</span></h3>
+                            <div class="progress mb-2">
+                                <div class="progress-bar bg-danger" role="progressbar" style="width: {{ (stats.most_severe_score * 100)|int }}%;" 
+                                    aria-valuenow="{{ (stats.most_severe_score * 100)|int }}" aria-valuemin="0" aria-valuemax="100">
+                                    {{ "%.0f"|format(stats.most_severe_score * 100) }}%
+                                </div>
+                            </div>
+                            <small class="text-muted">This category has the highest toxicity score in this thread.</small>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <h3 class="h5 mb-3"><i class="bi bi-bar-chart-fill me-2"></i>Category Breakdown</h3>
+                
+                <div class="table-responsive mb-4">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th class="text-light" scope="col">Category</th>
+                                <th class="text-light" scope="col">Average Score</th>
+                                <th class="text-light" scope="col">Severity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category, score in stats.categories|dictsort(by='value', reverse=True) %}
+                            <tr>
+                                <td class="text-light">{{ category|replace('_', ' ')|title }}</td>
+                                <td>{{ "%.2f"|format(score) }}</td>
+                                <td>
+                                    <div class="progress">
+                                        <div class="progress-bar {% if score > 0.7 %}bg-danger{% elif score > 0.4 %}bg-warning{% elif score > 0 %}bg-success{% else %}bg-secondary{% endif %}" 
+                                            role="progressbar" 
+                                            style="width: {{ (score * 100)|int }}%;" 
+                                            aria-valuenow="{{ (score * 100)|int }}" 
+                                            aria-valuemin="0" 
+                                            aria-valuemax="100">
+                                            {% if score > 0.1 %}{{ "%.0f"|format(score * 100) }}%{% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mb-5">
+                    <h3 class="h5 mb-3"><i class="bi bi-sliders me-2"></i>Adjust Toxicity Threshold</h3>
+                    <p class="text-muted mb-3">Move the slider to adjust the threshold at which comments are considered toxic.</p>
+                    
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <input type="range" class="form-range" id="thresholdSlider" min="0" max="1" step="0.05" value="{{ threshold }}">
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">Less Strict (0.0)</small>
+                                <small class="text-muted">Current: <span id="thresholdValue">{{ "%.2f"|format(threshold) }}</span></small>
+                                <small class="text-muted">More Strict (1.0)</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mt-3 mt-md-0">
+                            <a id="applyThresholdLink" href="{{ url_for('main.analyze', thread_url=thread_url, threshold=threshold) }}" class="btn btn-primary">
+                                <i class="bi bi-check2-circle me-2"></i>Apply New Threshold
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Home
+                    </a>
+                    <a href="{{ url_for('main.thread_view', thread_url=thread_url) }}" class="btn btn-primary">
+                        <i class="bi bi-chat-text me-2"></i>View Thread Comments
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const slider = document.getElementById('thresholdSlider');
+        const valueDisplay = document.getElementById('thresholdValue');
+        const link = document.getElementById('applyThresholdLink');
+        const baseUrl = "{{ url_for('main.analyze', thread_url=thread_url, threshold=0) }}".slice(0, -1);
+        
+        slider.addEventListener('input', function() {
+            const value = parseFloat(this.value).toFixed(2);
+            valueDisplay.textContent = value;
+            link.href = baseUrl + value;
+        });
+    });
+</script>
+{% endblock %} 
