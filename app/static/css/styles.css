@@ -244,13 +244,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-outline-danger {
-  border-color: var(--danger);
-  color: var(--danger);
+  color: #f8f9fa;
+  border-color: #dc3545;
 }
 
 .btn-outline-danger:hover {
-  background-color: var(--danger);
-  color: var(--light);
+  color: #f8f9fa;
+  background-color: #dc3545;
 }
 
 .btn-link {

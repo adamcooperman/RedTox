@@ -121,44 +121,44 @@ document.addEventListener('DOMContentLoaded', function() {
  * Initialize Bootstrap tooltips
  */
 function initTooltips() {
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    if (tooltipTriggerList.length) {
+        [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+    }
 }
 
 /**
- * Add hover effects to cards
+ * Add hover animation effects to cards
  */
 function animateCards() {
     const cards = document.querySelectorAll('.card');
     cards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-5px)';
-            this.style.boxShadow = '0 6px 15px rgba(0, 0, 0, 0.6)';
+        card.addEventListener('mouseenter', () => {
+            card.style.transform = 'translateY(-5px)';
+            card.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.6)';
         });
         
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-            this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.5)';
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'translateY(0)';
+            card.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.5)';
         });
     });
 }
 
 /**
- * Add hover effects to stat cards
+ * Add hover animation effects to stat cards
  */
 function animateStatCards() {
     const statCards = document.querySelectorAll('.stat-card');
     statCards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-5px) scale(1.05)';
-            this.style.boxShadow = '0 6px 15px rgba(0, 0, 0, 0.6)';
+        card.addEventListener('mouseenter', () => {
+            card.style.transform = 'translateY(-5px)';
+            card.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.6)';
         });
         
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0) scale(1)';
-            this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.5)';
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'translateY(0)';
+            card.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.5)';
         });
     });
 }
@@ -167,64 +167,101 @@ function animateStatCards() {
  * Add entrance animations to elements
  */
 function addEntranceAnimations() {
-    const cards = document.querySelectorAll('.card, .stat-card');
-    
-    cards.forEach((card, index) => {
-        // Set initial styles
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        card.style.transition = 'all 0.5s ease';
+    const elements = document.querySelectorAll('.card, .stat-card, .comment');
+    elements.forEach((el, index) => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
         
-        // Apply staggered animation delay based on index
+        // Add a staggered delay based on index
         setTimeout(() => {
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, 100 + (index * 100));
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+        }, 100 + (index * 50)); // 100ms base delay + 50ms per item
     });
 }
 
 /**
- * Initialize toxic content toggle buttons
+ * Initialize toggle buttons for toxic content 
  */
 function initToxicToggles() {
-    const toggleButtons = document.querySelectorAll('.toggle-content');
-    
-    toggleButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const comment = this.closest('.comment');
-            const toxicContent = comment.querySelector('.toxic-content');
-            const isVisible = toxicContent.style.display !== 'none';
+    // Global toggle for all toxic content
+    const globalToggleBtn = document.querySelector('.toggle-toxic-btn');
+    if (globalToggleBtn) {
+        globalToggleBtn.addEventListener('click', function() {
+            const state = this.getAttribute('data-state');
+            const toxicContents = document.querySelectorAll('.toxic-content');
+            const toxicWarnings = document.querySelectorAll('.toxic-warning');
+            const toggleButtons = document.querySelectorAll('.toggle-content');
             
-            if (isVisible) {
-                toxicContent.style.display = 'none';
-                this.textContent = 'Show Content';
-                this.classList.remove('btn-danger');
-                this.classList.add('btn-outline-danger');
+            if (state === 'hide') {
+                // Show all toxic content
+                toxicContents.forEach(content => content.style.display = 'block');
+                toxicWarnings.forEach(warning => warning.style.display = 'none');
+                toggleButtons.forEach(btn => {
+                    btn.textContent = 'Hide Content';
+                    btn.classList.remove('btn-outline-danger');
+                    btn.classList.add('btn-danger');
+                });
+                
+                this.innerHTML = '<i class="bi bi-eye me-1"></i>Hide All Toxic Comments';
+                this.setAttribute('data-state', 'show');
             } else {
-                toxicContent.style.display = 'block';
-                this.textContent = 'Hide Content';
-                this.classList.remove('btn-outline-danger');
-                this.classList.add('btn-danger');
+                // Hide all toxic content
+                toxicContents.forEach(content => content.style.display = 'none');
+                toxicWarnings.forEach(warning => warning.style.display = 'block');
+                toggleButtons.forEach(btn => {
+                    btn.textContent = 'Show Content';
+                    btn.classList.remove('btn-danger');
+                    btn.classList.add('btn-outline-danger');
+                });
+                
+                this.innerHTML = '<i class="bi bi-eye-slash me-1"></i>Show All Toxic Comments';
+                this.setAttribute('data-state', 'hide');
             }
         });
-    });
+    }
+    
+    // Individual toggle buttons
+    const toggleButtons = document.querySelectorAll('.toggle-content');
+    if (toggleButtons.length > 0) {
+        console.log('Initializing ' + toggleButtons.length + ' toggle buttons');
+        
+        toggleButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault(); // Prevent default button behavior
+                console.log('Toggle button clicked');
+                
+                const warningDiv = this.closest('.toxic-warning');
+                const commentDiv = this.closest('.comment');
+                const contentDiv = commentDiv.querySelector('.toxic-content');
+                
+                console.log('Warning div:', warningDiv);
+                console.log('Content div:', contentDiv);
+                
+                if (contentDiv.style.display === 'none' || getComputedStyle(contentDiv).display === 'none') {
+                    // Show content
+                    contentDiv.style.display = 'block';
+                    this.textContent = 'Hide Content';
+                    this.classList.remove('btn-outline-danger');
+                    this.classList.add('btn-danger');
+                } else {
+                    // Hide content
+                    contentDiv.style.display = 'none';
+                    this.textContent = 'Show Content';
+                    this.classList.remove('btn-danger');
+                    this.classList.add('btn-outline-danger');
+                }
+            });
+        });
+    }
 }
 
 /**
  * Update URL with new threshold value
- * @param {string} baseUrl - Base URL without threshold
- * @param {string} thresholdValue - Current threshold value
- * @param {HTMLElement} linkElement - Element to update href
  */
-function updateThresholdLink(baseUrl, thresholdValue, linkElement) {
-    if (!linkElement) return;
-    
-    // Extract the current URL parts
-    const url = new URL(linkElement.href, window.location.origin);
-    
-    // Set the threshold parameter
-    url.searchParams.set('threshold', thresholdValue);
-    
-    // Update the href
-    linkElement.href = url.toString();
+function updateThresholdLink(threshold) {
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.set('threshold', threshold);
+    window.location.href = currentUrl.toString();
 } 

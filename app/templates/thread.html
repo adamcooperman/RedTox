@@ -8,7 +8,8 @@
         margin-bottom: 1rem;
         padding: 1rem;
         border-radius: 0.25rem;
-        background-color: #f8f9fa;
+        background-color: var(--card-bg);
+        color: #f8f9fa;
     }
     .toxic-comment {
         border-left: 4px solid #dc3545;
@@ -18,13 +19,20 @@
         margin-bottom: 0.5rem;
     }
     .comment-score {
-        color: #6c757d;
+        color: #adb5bd;
         font-size: 0.9rem;
     }
     .toxic-warning {
         padding: 0.5rem;
-        background-color: #fff3cd;
+        background-color: rgba(220, 53, 69, 0.1);
         border-radius: 0.25rem;
+        color: #f8f9fa;
+    }
+    .comment-body {
+        color: #f8f9fa;
+    }
+    .toxic-content {
+        color: #f8f9fa;
     }
     .thread-info {
         border-bottom: 1px solid #dee2e6;
@@ -127,7 +135,7 @@
                     {% for comment in thread.comments %}
                         <div class="comment {% if comment.toxicity.is_toxic %}toxic-comment{% endif %}">
                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div class="comment-author">
+                                <div class="comment-author text-light">
                                     <i class="bi bi-person-circle me-1"></i>{{ comment.author }}
                                     <span class="comment-score"><i class="bi bi-arrow-up me-1"></i>{{ comment.score }}</span>
                                 </div>
@@ -141,7 +149,7 @@
                                 <div class="d-flex align-items-center">
                                     <i class="bi bi-exclamation-triangle-fill me-2"></i>
                                     <div>
-                                        <strong>Warning: This comment may contain toxic content.</strong>
+                                        <strong class="text-light">Warning: This comment may contain toxic content.</strong>
                                         <div class="mt-1">
                                             {% if comment.toxicity.max_category %}
                                             <span class="badge bg-danger me-1">{{ comment.toxicity.max_category|replace('_', ' ')|title }}</span>
@@ -151,17 +159,17 @@
                                     </div>
                                 </div>
                                 <div class="mt-2 text-end">
-                                    <button class="btn btn-sm btn-outline-danger toggle-content">Show Content</button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="revealComment(this)">Show Content</button>
                                 </div>
                             </div>
                             <div class="toxic-content" style="display: none;">
-                                {{ comment.body }}
+                                <p class="text-light">{{ comment.body }}</p>
                                 
                                 <!-- Show detailed category breakdown if available -->
                                 {% if comment.toxicity.categories %}
                                 <div class="mt-3">
-                                    <h6 class="small">Category scores:</h6>
-                                    <ul class="small">
+                                    <h6 class="small text-light">Category scores:</h6>
+                                    <ul class="small text-light">
                                         {% for category, score in comment.toxicity.categories.items() %}
                                         {% if score > 0.2 %}
                                         <li>
@@ -178,7 +186,7 @@
                             </div>
                             {% else %}
                             <div class="comment-body">
-                                {{ comment.body }}
+                                <p class="text-light">{{ comment.body }}</p>
                             </div>
                             {% endif %}
                         </div>
@@ -198,29 +206,38 @@
         const thresholdValue = document.getElementById('thresholdValue');
         const applyBtn = document.getElementById('applyThreshold');
         
-        slider.addEventListener('input', function() {
-            const value = parseFloat(this.value).toFixed(2);
-            thresholdValue.textContent = value;
-        });
-        
-        applyBtn.addEventListener('click', function() {
-            const value = slider.value;
-            window.location.href = window.location.pathname + '?threshold=' + value;
-        });
-        
-        // Toggle toxic content
-        document.querySelectorAll('.toggle-content').forEach(button => {
-            button.addEventListener('click', function() {
-                const contentDiv = this.closest('.toxic-warning').nextElementSibling;
-                if (contentDiv.style.display === 'none') {
-                    contentDiv.style.display = 'block';
-                    this.textContent = 'Hide Content';
-                } else {
-                    contentDiv.style.display = 'none';
-                    this.textContent = 'Show Content';
-                }
+        if (slider) {
+            slider.addEventListener('input', function() {
+                const value = parseFloat(this.value).toFixed(2);
+                thresholdValue.textContent = value;
             });
-        });
+        }
+        
+        if (applyBtn) {
+            applyBtn.addEventListener('click', function() {
+                const value = slider.value;
+                window.location.href = window.location.pathname + '?threshold=' + value;
+            });
+        }
     });
+    
+    // Simple direct function to reveal comments
+    function revealComment(button) {
+        const commentDiv = button.closest('.comment');
+        const warningDiv = commentDiv.querySelector('.toxic-warning');
+        const contentDiv = commentDiv.querySelector('.toxic-content');
+        
+        if (contentDiv.style.display === 'none') {
+            contentDiv.style.display = 'block';
+            button.textContent = 'Hide Content';
+            button.classList.remove('btn-outline-danger');
+            button.classList.add('btn-danger');
+        } else {
+            contentDiv.style.display = 'none';
+            button.textContent = 'Show Content';
+            button.classList.remove('btn-danger');
+            button.classList.add('btn-outline-danger');
+        }
+    }
 </script>
 {% endblock %} 
